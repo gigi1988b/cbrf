@@ -1,0 +1,65 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.8.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'java'
+    id "no.nils.wsdl2java" version "0.10"
+}
+
+group 'su.mbv'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'no.nils.wsdl2java'
+wsdl2javaExt {
+    cxfVersion = "3.3.3"
+}
+
+def props = new Properties()
+file("${projectDir}/src/main/resources/application.properties").withInputStream { props.load(it) }
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation "com.hazelcast:hazelcast:3.12.3"
+    implementation "com.hazelcast:hazelcast-spring:3.12.3"
+
+    wsdl2java 'com.sun.xml.bind:jaxb-xjc:2.3.2'
+    wsdl2java 'javax.xml.bind:jaxb-api:2.3.1'
+    wsdl2java 'javax.xml.ws:jaxws-api:2.3.1'
+    wsdl2java 'org.apache.cxf:cxf-rt-wsdl:3.2.7'
+    wsdl2java 'javax.jws:javax.jws-api:1.1'
+    wsdl2java 'com.sun.xml.ws:jaxws-rt:2.3.2'
+
+    implementation 'com.sun.xml.bind:jaxb-xjc:2.3.2'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'javax.xml.ws:jaxws-api:2.3.1'
+    implementation 'org.apache.cxf:cxf-rt-wsdl:3.2.7'
+    implementation 'javax.jws:javax.jws-api:1.1'
+    implementation 'com.sun.xml.ws:jaxws-rt:2.3.2'
+
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+wsdl2java {
+
+
+    System.setProperty('javax.xml.accessExternalSchema', 'all')
+    System.setProperty('javax.xml.accessExternalDTD', 'all')
+    generatedWsdlDir = file("${projectDir}/src/main/service") //java source classes will be generated
+    wsdlsToGenerate = [
+            [
+                    '-b', 'http://www.w3.org/2001/XMLSchema.xsd',
+                    '-xjc', '-b', "${projectDir}/src/main/resources/wsdl/customization.xjb",
+                    props.getProperty("cbrf.url").toURI()
+
+
+            ],
+    ]
+}
+
+compileJava.dependsOn wsdl2java
